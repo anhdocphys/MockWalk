@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MockWalk</string>
+
+    <!-- Google Maps API Key: Replace with your actual key if needed for map display -->
+    <string name="google_maps_key" translatable="false">AIzaSyYourGoogleMapsApiKeyHere</string>
+
+    <!-- Notification Strings -->
+    <string name="notification_channel_name">Mock Walk Service</string>
+    <string name="notification_channel_desc">Cập nhật tiến trình đi bộ giả lập theo thời gian thực</string>
+    <string name="notification_title">MockWalk đang mô phỏng đi bộ</string>
+    <string name="action_stop">Dừng mô phỏng</string>
+
+    <!-- UI Strings -->
+    <string name="title_controls">Thiết lập Lộ trình &amp; Vận tốc</string>
+    <string name="label_min_speed">Min Speed (km/h)</string>
+    <string name="label_max_speed">Max Speed (km/h)</string>
+    <string name="label_target_distance">Target Dist (km)</string>
+    <string name="btn_start">Start Simulation</string>
+    <string name="btn_stop">Stop Simulation</string>
+    <string name="btn_current_location">Vị trí hiện tại</string>
+    <string name="status_idle">Trạng thái: Chưa bắt đầu (Chạm bản đồ để chọn điểm xuất phát)</string>
+    <string name="status_fetching_route">Đang tính toán tuyến đường qua OSRM...</string>
+    <string name="status_walking">Đang mô phỏng đi bộ (Strava Natural Pace)...</string>
+    <string name="status_completed">Đã hoàn thành mục tiêu quãng đường!</string>
+    <string name="status_stopped">Đã dừng mô phỏng</string>
+
+    <!-- Statistics -->
+    <string name="stat_distance_label">Quãng đường</string>
+    <string name="stat_distance_format">%1$.2f / %2$.2f km</string>
+    <string name="stat_speed_label">Tốc độ</string>
+    <string name="stat_speed_format">%1$.1f km/h</string>
+    <string name="stat_pace_label">Pace (Nhịp độ)</string>
+    <string name="stat_pace_format">%1$d\'%2$02d\" /km</string>
+
+    <!-- Alerts & Guides -->
+    <string name="error_mock_location_title">Chưa cấp quyền Mock Location</string>
+    <string name="error_mock_location_message">Để ứng dụng có thể bơm dữ liệu GPS cho Strava, vui lòng:\n\n1. Mở Cài đặt điện thoại (Settings)\n2. Vào Tùy chọn cho nhà phát triển (Developer Options)\n3. Tìm mục \"Chọn ứng dụng vị trí giả\" (Select mock location app)\n4. Chọn \"MockWalk\"\n\nSau đó quay lại ứng dụng và thử lại.</string>
+    <string name="btn_open_dev_settings">Mở Cài đặt Nhà phát triển</string>
+    <string name="btn_cancel">Hủy</string>
+    <string name="error_no_start_point">Vui lòng chạm lên bản đồ để chọn điểm bắt đầu!</string>
+    <string name="error_osrm_failed">Không thể lấy lộ trình từ OSRM. Đang tự động dùng lộ trình nội suy thay thế.</string>
+</resources>

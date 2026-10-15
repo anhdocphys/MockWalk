@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_dark"
+    tools:context=".ui.MainActivity">
+
+    <!-- OpenStreetMap Container (OSMDroid - 100% Free, No API Key) -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Status Badge (Top Floating) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/statusCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="48dp"
+        app:cardBackgroundColor="@color/card_dark"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="6dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/card_dark_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp">
+
+            <ImageView
+                android:id="@+id/ivStatusDot"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_walk"
+                app:tint="@color/strava_orange" />
+
+            <TextView
+                android:id="@+id/tvStatusText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/status_idle"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/strava_orange"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- My Location Button (Floating) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMyLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/btn_current_location"
+        app:backgroundTint="@color/card_dark"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/bottomControlCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_mylocation"
+        app:tint="@color/strava_orange" />
+
+    <!-- Bottom Controls & Stats Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomControlCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/card_dark"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/card_dark_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="20dp">
+
+            <!-- Card Header -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_controls"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- Input Fields Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <!-- Min Speed -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilMinSpeed"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/label_min_speed"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxStrokeColor="@color/strava_orange"
+                    app:hintTextColor="@color/strava_orange">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etMinSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:text="4.0"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Max Speed -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilMaxSpeed"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:hint="@string/label_max_speed"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxStrokeColor="@color/strava_orange"
+                    app:hintTextColor="@color/strava_orange">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etMaxSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:text="6.0"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Target Distance -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTargetDist"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:hint="@string/label_target_distance"
+                    android:textColorHint="@color/text_secondary"
+                    app:boxStrokeColor="@color/strava_orange"
+                    app:hintTextColor="@color/strava_orange">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTargetDistance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
+                        android:text="3.0"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Real-time Stats Grid -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- Distance Box -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_stat_box"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/stat_distance_label"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatDistance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="0.00 / 3.00 km"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Speed Box -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_stat_box"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/stat_speed_label"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatSpeed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="0.0 km/h"
+                        android:textColor="@color/accent_green"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Pace Box -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_stat_box"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/stat_pace_label"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatPace"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="0:00 /km"
+                        android:textColor="@color/strava_orange"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Buttons: Start & Stop Simulation -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStart"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/strava_orange"
+                    android:text="@string/btn_start"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp"
+                    app:icon="@drawable/ic_walk"
+                    app:iconTint="@color/white" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStop"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/accent_red"
+                    android:enabled="false"
+                    android:text="@string/btn_stop"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="10dp"
+                    app:icon="@android:drawable/ic_media_pause"
+                    app:iconTint="@color/white" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
