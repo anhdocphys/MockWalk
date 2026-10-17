@@ -7,25 +7,34 @@
 
     <!-- Notification Strings -->
     <string name="notification_channel_name">Mock Walk Service</string>
-    <string name="notification_channel_desc">Cập nhật tiến trình đi bộ giả lập theo thời gian thực</string>
+    <string name="notification_channel_desc">Cập nhật tiến trình đi bộ giả lập và khóa vị trí GPS theo thời gian thực</string>
     <string name="notification_title">MockWalk đang mô phỏng đi bộ</string>
-    <string name="action_stop">Dừng mô phỏng</string>
+    <string name="notification_title_anchored">📍 Đang khóa GPS tại Điểm [1] - Sẵn sàng mở Strava</string>
+    <string name="action_stop_walk">Dừng đi (Giữ GPS)</string>
+    <string name="action_exit_mock">Tắt hẳn Mock</string>
 
     <!-- UI Strings -->
-    <string name="title_controls">Thiết lập Lộ trình &amp; Vận tốc</string>
+    <string name="title_controls">Thiết kế Lộ trình Đa điểm &amp; Vận tốc</string>
     <string name="label_min_speed">Min Speed (km/h)</string>
     <string name="label_max_speed">Max Speed (km/h)</string>
     <string name="label_target_distance">Target Dist (km)</string>
-    <string name="btn_start">Start Simulation</string>
-    <string name="btn_stop">Stop Simulation</string>
+    <string name="label_close_loop">Khép kín vòng (Đi quanh hồ)</string>
+    <string name="btn_undo">Undo</string>
+    <string name="btn_clear">Clear</string>
+    <string name="btn_preview_route">Preview Route</string>
+    <string name="btn_start">Start Walk</string>
+    <string name="btn_stop_walk">Stop Walk (Giữ GPS)</string>
+    <string name="btn_exit_mock">Exit Mock (Tắt hẳn)</string>
     <string name="btn_current_location">Vị trí hiện tại</string>
-    <string name="status_idle">Trạng thái: Chưa bắt đầu (Chạm bản đồ để chọn điểm xuất phát)</string>
+    <string name="status_idle">Chạm bản đồ để chấm các điểm lộ trình (Điểm 1 sẽ tự động khóa GPS chờ sẵn)</string>
+    <string name="status_anchored">📍 Đang khóa GPS tại Điểm [1] - Sẵn sàng mở Strava</string>
     <string name="status_fetching_route">Đang tính toán tuyến đường qua OSRM...</string>
     <string name="status_walking">Đang mô phỏng đi bộ (Strava Natural Pace)...</string>
-    <string name="status_completed">Đã hoàn thành mục tiêu quãng đường!</string>
-    <string name="status_stopped">Đã dừng mô phỏng</string>
+    <string name="status_completed">Đã hoàn thành mục tiêu! Đang giữ GPS để bạn lưu Strava</string>
+    <string name="status_stopped">Đã tắt hoàn toàn giả lập GPS (Trả lại GPS thật)</string>
 
     <!-- Statistics -->
+    <string name="stat_lap_label">Vòng (Lap)</string>
     <string name="stat_distance_label">Quãng đường</string>
     <string name="stat_distance_format">%1$.2f / %2$.2f km</string>
     <string name="stat_speed_label">Tốc độ</string>
@@ -38,6 +47,6 @@
     <string name="error_mock_location_message">Để ứng dụng có thể bơm dữ liệu GPS cho Strava, vui lòng:\n\n1. Mở Cài đặt điện thoại (Settings)\n2. Vào Tùy chọn cho nhà phát triển (Developer Options)\n3. Tìm mục \"Chọn ứng dụng vị trí giả\" (Select mock location app)\n4. Chọn \"MockWalk\"\n\nSau đó quay lại ứng dụng và thử lại.</string>
     <string name="btn_open_dev_settings">Mở Cài đặt Nhà phát triển</string>
     <string name="btn_cancel">Hủy</string>
-    <string name="error_no_start_point">Vui lòng chạm lên bản đồ để chọn điểm bắt đầu!</string>
+    <string name="error_no_start_point">Vui lòng chạm lên bản đồ để chọn ít nhất 1 điểm!</string>
     <string name="error_osrm_failed">Không thể lấy lộ trình từ OSRM. Đang tự động dùng lộ trình nội suy thay thế.</string>
 </resources>

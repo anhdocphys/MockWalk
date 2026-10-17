@@ -94,4 +94,12 @@ object GeoUtils {
         }
         return total
     }
+
+    /**
+     * Compute shortest angular difference in degrees [0, 180] between two bearings.
+     */
+    fun computeAngleDiff(bearing1: Double, bearing2: Double): Double {
+        val diff = abs(bearing1 - bearing2) % 360.0
+        return if (diff > 180.0) 360.0 - diff else diff
+    }
 }

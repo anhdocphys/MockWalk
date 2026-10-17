@@ -2,15 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Network permissions for OSRM API -->
+    <!-- Network permissions for OSRM API & OSMDroid Map Tiles -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Location permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    
-    <!-- Mock Location permission (Granted automatically via Developer Options -> Select mock location app) -->
+
+    <!-- Mock Location permission (Granted via Developer Options -> Select mock location app) -->
     <uses-permission
         android:name="android.permission.ACCESS_MOCK_LOCATION"
         tools:ignore="MockLocation" />
@@ -24,6 +24,7 @@
     <application
         android:name=".MockWalkApplication"
         android:allowBackup="true"
+        android:hasFragileUserData="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -32,12 +33,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
 
-        <!-- Google Maps API Key -->
+        <!-- Google Maps API Key (Optional fallback) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <!-- Foreground Service for Mock Walk Location Injection -->
+        <!-- Foreground Service for Mock Walk & Stationary Start-Point Anchor -->
         <service
             android:name=".service.MockWalkService"
             android:enabled="true"

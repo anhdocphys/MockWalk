@@ -8,15 +8,16 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
-import java.io.IOException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.math.*
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
- * Helper class to generate loop waypoints, query the public OSRM routing API (foot profile),
- * and parse GeoJSON coordinates into a realistic road-following polyline.
+ * Helper class to handle:
+ * 1. Custom Multi-Waypoint routing (with optional loop closure P1 -> P2 -> ... -> Pn -> P1).
+ * 2. Automatic random loop generation fallback when only 1 start point is selected.
+ * 3. Querying the public OSRM Foot Routing API and parsing GeoJSON coordinates & distance metadata.
  */
 class OsrmRouteHelper(
     private val client: OkHttpClient = OkHttpClient.Builder()
@@ -31,58 +32,89 @@ class OsrmRouteHelper(
     }
 
     /**
-     * Result containing the decoded route points and actual total distance in meters.
+     * Metadata & geometry for a single lap/traversal returned from OSRM.
      */
     data class RouteResult(
-        val points: List<LatLng>,
-        val totalDistanceMeters: Double,
+        val routePoints: List<LatLng>,
+        val singleLapDistanceMeters: Double,
         val isFallback: Boolean = false
     )
 
     /**
-     * Main entry point: Generates waypoints around [startPoint] based on [targetDistanceKm],
-     * queries OSRM, parses coordinates, and extends/loops the route if necessary to meet target distance.
+     * Builds a realistic walking route from a list of user-selected [waypoints].
+     * - If [waypoints] has only 1 point: falls back to generating a random polygon loop around that point.
+     * - If [waypoints] has >= 2 points and [closeLoop] == true: appends [waypoints.first()] to close the loop.
+     * - Queries OSRM foot routing API and returns single-lap coordinates and distance.
+     */
+    suspend fun getRouteFromWaypoints(
+        waypoints: List<LatLng>,
+        closeLoop: Boolean,
+        fallbackTargetDistanceKm: Double = 3.0
+    ): RouteResult = withContext(Dispatchers.IO) {
+        require(waypoints.isNotEmpty()) { "Waypoints list cannot be empty" }
+
+        // Prepare effective waypoints to send to OSRM
+        val effectiveWaypoints: List<LatLng> = if (waypoints.size == 1) {
+            val targetMeters = (fallbackTargetDistanceKm * 1000.0).coerceAtLeast(500.0)
+            Log.d(TAG, "Single waypoint provided. Generating random loop around ${waypoints.first()}")
+            generateLoopWaypoints(waypoints.first(), targetMeters)
+        } else {
+            val list = waypoints.toMutableList()
+            if (closeLoop) {
+                val first = list.first()
+                val last = list.last()
+                // Append first point if not already closed
+                if (GeoUtils.computeDistanceMeters(first, last) > 5.0) {
+                    list.add(first)
+                }
+            }
+            list
+        }
+
+        Log.d(TAG, "Requesting route with ${effectiveWaypoints.size} waypoints (closeLoop=$closeLoop)")
+
+        val fetchedResult = try {
+            fetchOsrmRoute(effectiveWaypoints)
+        } catch (e: Exception) {
+            Log.w(TAG, "OSRM query failed: ${e.message}. Using dense linear fallback route.", e)
+            null
+        }
+
+        if (fetchedResult != null && fetchedResult.routePoints.size >= 2) {
+            val dist = if (fetchedResult.singleLapDistanceMeters > 0.0) {
+                fetchedResult.singleLapDistanceMeters
+            } else {
+                GeoUtils.computeTotalPathDistance(fetchedResult.routePoints)
+            }
+            Log.d(TAG, "OSRM route ready: ${fetchedResult.routePoints.size} points, 1-lap distance: ${dist.roundToInt()}m")
+            RouteResult(
+                routePoints = fetchedResult.routePoints,
+                singleLapDistanceMeters = dist,
+                isFallback = false
+            )
+        } else {
+            val fallbackPoints = createDenseFallbackPath(effectiveWaypoints)
+            val fallbackDistance = GeoUtils.computeTotalPathDistance(fallbackPoints)
+            Log.d(TAG, "Fallback route ready: ${fallbackPoints.size} points, 1-lap distance: ${fallbackDistance.roundToInt()}m")
+            RouteResult(
+                routePoints = fallbackPoints,
+                singleLapDistanceMeters = fallbackDistance,
+                isFallback = true
+            )
+        }
+    }
+
+    /**
+     * Legacy helper for 1-point automatic loop generation.
      */
     suspend fun getRealisticWalkRoute(
         startPoint: LatLng,
         targetDistanceKm: Double
-    ): RouteResult = withContext(Dispatchers.IO) {
-        val targetDistanceMeters = targetDistanceKm * 1000.0
-
-        // 1. Generate waypoints forming a loop
-        val waypoints = generateLoopWaypoints(startPoint, targetDistanceMeters)
-        Log.d(TAG, "Generated ${waypoints.size} waypoints for loop around $startPoint")
-
-        // 2. Fetch OSRM route
-        val fetchedResult = try {
-            fetchOsrmRoute(waypoints)
-        } catch (e: Exception) {
-            Log.w(TAG, "OSRM query failed: ${e.message}. Using synthetic fallback route.", e)
-            null
-        }
-
-        val basePoints: List<LatLng>
-        val baseDistance: Double
-        val isFallback: Boolean
-
-        if (fetchedResult != null && fetchedResult.points.size >= 2) {
-            basePoints = fetchedResult.points
-            baseDistance = fetchedResult.totalDistanceMeters
-            isFallback = false
-        } else {
-            // Resilient fallback: interpolate between waypoints directly
-            basePoints = createDenseFallbackPath(waypoints)
-            baseDistance = GeoUtils.computeTotalPathDistance(basePoints)
-            isFallback = true
-        }
-
-        // 3. If route is shorter than target distance, loop the route points until distance >= target
-        val finalPoints = ensureTargetDistanceMet(basePoints, baseDistance, targetDistanceMeters)
-        val finalDistance = GeoUtils.computeTotalPathDistance(finalPoints)
-
-        Log.d(TAG, "Final route ready: ${finalPoints.size} points, total distance: ${finalDistance.roundToInt()}m (target: ${targetDistanceMeters.roundToInt()}m)")
-        RouteResult(finalPoints, finalDistance, isFallback)
-    }
+    ): RouteResult = getRouteFromWaypoints(
+        waypoints = listOf(startPoint),
+        closeLoop = true,
+        fallbackTargetDistanceKm = targetDistanceKm
+    )
 
     /**
      * Generates a circular / polygonal series of waypoints starting and ending at [startPoint].
@@ -94,13 +126,13 @@ class OsrmRouteHelper(
 
         // Estimated circumference of polygon considering road tortuosity
         val effectivePerimeter = targetDistanceMeters / 1.35
-        val radiusMeters = (effectivePerimeter / (2.0 * Math.PI)).coerceIn(150.0, 5000.0)
+        val radiusMeters = (effectivePerimeter / (2.0 * Math.PI)).coerceIn(120.0, 5000.0)
 
         // Choose a random direction for loop center
         val centerBearing = Random.nextDouble(0.0, 360.0)
         val loopCenter = GeoUtils.computeDestination(startPoint, radiusMeters, centerBearing)
 
-        // Number of vertices for the loop (between 5 and 7 points)
+        // Number of vertices for the loop
         val numVertices = 6
         val baseAngleStep = 360.0 / numVertices
         val startAngle = (centerBearing + 180.0) % 360.0
@@ -118,21 +150,20 @@ class OsrmRouteHelper(
     }
 
     /**
-     * Executes HTTP GET request to OSRM Foot Routing API and parses GeoJSON coordinates.
+     * Executes HTTP GET request to OSRM Foot Routing API and parses GeoJSON coordinates + distance.
      * Note: OSRM coordinate order is {longitude},{latitude}.
      */
     private fun fetchOsrmRoute(waypoints: List<LatLng>): RouteResult? {
-        // Construct coordinates string: "lng1,lat1;lng2,lat2;..."
         val coordString = waypoints.joinToString(";") {
             String.format(Locale.US, "%.6f,%.6f", it.longitude, it.latitude)
         }
 
         val url = "$OSRM_BASE_URL$coordString?overview=full&geometries=geojson&steps=false"
-        Log.d(TAG, "Requesting OSRM: $url")
+        Log.d(TAG, "GET OSRM URL: $url")
 
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "MockWalkAndroid/1.0 (StravaWalkSimulator)")
+            .header("User-Agent", "MockWalkAndroid/2.0 (StravaMultiLapSimulator)")
             .get()
             .build()
 
@@ -166,38 +197,12 @@ class OsrmRouteHelper(
                 points.add(LatLng(lat, lng))
             }
 
-            return RouteResult(points, distanceMeters)
+            return RouteResult(
+                routePoints = points,
+                singleLapDistanceMeters = distanceMeters,
+                isFallback = false
+            )
         }
-    }
-
-    /**
-     * If the returned route from OSRM is shorter than the desired target distance,
-     * seamlessly loops the route coordinates until the cumulative distance reaches or exceeds target.
-     */
-    private fun ensureTargetDistanceMet(
-        basePoints: List<LatLng>,
-        baseDistance: Double,
-        targetDistanceMeters: Double
-    ): List<LatLng> {
-        if (basePoints.size < 2) return basePoints
-        if (baseDistance >= targetDistanceMeters) return basePoints
-
-        val result = mutableListOf<LatLng>()
-        result.addAll(basePoints)
-        var accumulated = baseDistance
-
-        var loopCount = 1
-        while (accumulated < targetDistanceMeters && loopCount < 50) {
-            // Append basePoints starting from index 1 (skipping duplicate connecting node)
-            for (i in 1 until basePoints.size) {
-                result.add(basePoints[i])
-                accumulated += GeoUtils.computeDistanceMeters(basePoints[i - 1], basePoints[i])
-                if (accumulated >= targetDistanceMeters) break
-            }
-            loopCount++
-        }
-
-        return result
     }
 
     /**
@@ -206,7 +211,7 @@ class OsrmRouteHelper(
      */
     private fun createDenseFallbackPath(waypoints: List<LatLng>): List<LatLng> {
         val path = mutableListOf<LatLng>()
-        val stepSizeMeters = 20.0
+        val stepSizeMeters = 15.0
 
         for (i in 0 until waypoints.size - 1) {
             val p1 = waypoints[i]
